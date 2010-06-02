@@ -1,0 +1,67 @@
+body{
+	font-family: Baskerville,"Baskerville old face","Hoefler Text",Garamond,"Times New Roman",serif;
+	color: #999;
+}
+h1{
+	text-align: center;
+}
+h1 a{
+	text-decoration: none;
+	color: #000052;
+}
+h1 a:hover{
+	text-decoration: underline;
+}
+h1 a em{
+	color: #9FD8FF;
+	font-style: normal;
+}
+.kvp{
+	padding: 3px;
+	margin: 2px;
+}
+.kvp > input:first-child{
+	background: lightblue;
+	border: 1px solid #333;
+	padding: 3px;
+}
+.object{
+	border: 1px dotted #999;
+	margin-left: 15px;
+}
+.array{
+	border: 1px dashed #999;
+	margin-left: 15px;
+}
+
+.left{
+	float: left;
+	width: 48%;
+}
+.right{
+	float: right;
+	width: 48%;
+}
+#input{
+	width: 100%;
+	height: 350px;
+}
+#output{
+	width: 100%;
+	height: 350px;
+}
+#reformed{
+	clear: both;
+	display: block;
+	margin: 15px 0;
+}
+
+#reformthis{
+	font-weight: bold;
+}
+#jsonthis{
+	font-weight: bold;
+}
+#prettythis{
+	color: #333;
+}

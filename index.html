@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>reformed</title>
+	<script type="text/javascript" src="jquery.1.4.2.min.js"></script>
+	<script type="text/javascript" src="json2.js"></script>
+	<script type="text/javascript" src="jquery.json-2.2.min.js"></script>
+	<script type="text/javascript" src="reformed.js"></script>	
+	<script type="text/javascript">
+	var json = {};
+	var reform = '';
+	$(document).ready(function() {
+	
+		$('#reformthis').click(function() {
+			var reformed = $('#reformed').empty();
+			reform = $.parseJSON($('#input').val());
+			for (attrname in reform) {
+				reformed.append(kvp_t(attrname, reform[attrname]));
+			}
+		});
+		
+		$('#prettythis').click(function() {
+			$('#input').val(JSON.stringify($.parseJSON($('#input').val()), null, '\t'));
+		});
+		
+		$('#jsonthis').click(function() {
+			$('#reformed > .kvp').each(function (idx) {
+			    _kvp = kvp($(this));
+			    for (attrname in _kvp) {
+			    	json[attrname] = _kvp[attrname];
+			    }
+			});
+			
+			$('#output').val($.toJSON(json));
+		});
+		
+		$('#input').scroll(function() {
+		    $('#output')
+		    .scrollTop($('#input').scrollTop());
+		});
+		
+		$('#output').scroll(function() {
+		    $('#input')
+		    .scrollTop($('#output').scrollTop());
+		});
+	});
+	</script>
+
+	<style type="text/css">
+	</style>
+	<link rel="stylesheet" type="text/css" href="reformed.css" />
+</head>
+<body>
+<h1>re:form.ed by <a href="http://www.bigbluehat.com/">Big<em>Blue</em>Hat</a></h1>
+
+<div style="overflow:hidden">
+<div class="left">
+	<textarea id="input">
+	{
+	   "id": "507401517",
+	   "name": "Benjamin Young",
+	   "first_name": "Benjamin",
+	   "last_name": "Young",
+	   "link": "http://www.facebook.com/benjaminyoung",
+	   "about": "Dreamer, Inventor, Web Developer. I run this: http://bigbluehat.com/ and build this: http://blueinkcms.com/",
+	   "location": {
+	      "id": 107600062603098,
+	      "name": "Greenville, South Carolina"
+	   },
+	   "work": [
+	      {
+	         "employer": {
+	            "id": 111737955518707,
+	            "name": "BigBlueHat"
+	         },
+	         "start_date": "2003-07"
+	      }
+	   ],
+	   "meeting_for": [
+	         "Friendship",
+	         "Networking"
+		]
+	}
+	</textarea>
+	
+	<div class="buttons">
+	<input type="button" value="re:form the above JSON" id="reformthis" />
+	<input type="button" value="(optional) pretty print the above JSON" id="prettythis" />
+	</div>
+</div>
+<div class="right">
+	<textarea id="output">
+	
+	</textarea>
+	
+	<div class="buttons">
+	<input type="button" value="re:JSON the form below" id="jsonthis" />
+	</div>
+</div>
+</div>
+
+<form id="reformed">
+
+</form>
+
+
+<!-- sample JSON serialization in HTML -->
+	<form id="formed" style="display:none">
+		<div class="kvp">
+			<input type="text" value="name" />
+			<input type="text" value="Benjamin Young" />
+		</div>
+		<div class="kvp">
+			<input type="text" value="location" />
+			<fieldset class="object">
+				<div class="kvp">
+					<input type="text" name="" value="name" />
+					<input type="text" name="" value="Greenville, South Carolina" />
+				</div>
+			</fieldset>
+		</div>
+		<div class="kvp">
+			<input type="text" value="work" />
+			<fieldset class="array"><!-- array -->
+				<fieldset class="object"><!-- object -->
+					<div class="kvp">
+						<input type="text" value="employer" />
+						<fieldset class="object"><!-- object -->
+							<div class="kvp">
+								<input type="text" value="id" />
+								<input type="text" value="111737955518707" />
+							</div>
+							<div class="kvp">
+								<input type="text" value="name" />
+								<input type="text" value="BigBlueHat" />
+							</div>
+						</fieldset>
+					</div>
+					<div class="kvp">
+						<input type="text" value="start_date" />
+						<input type="text" value="2003-07" />
+					</div>
+				</fieldset>
+				<fieldset class="object"><!-- object -->
+					<div class="kvp">
+						<input type="text" value="employer" />
+						<fieldset class="object"><!-- object -->
+							<div class="kvp">
+								<input type="text" value="id" />
+								<input type="text" value="123" />
+							</div>
+							<div class="kvp">
+								<input type="text" value="name" />
+								<input type="text" value="Other Employer" />
+							</div>
+						</fieldset><!-- end object -->
+					</div>
+				</fieldset><!-- end object -->
+			</fieldset><!-- end array -->
+		</div>
+		<div class="kvp">
+			<input type="text" value="meeting_for" />
+			<fieldset class="array"><!-- array -->
+				<input type="text" value="Friendship" />
+				<input type="text" value="Networking" />
+			</fieldset>
+		</div>
+	</form>
+
+</body>
+</html>
