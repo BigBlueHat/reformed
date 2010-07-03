@@ -4,37 +4,25 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>reformed</title>
 	<script type="text/javascript" src="jquery.1.4.2.min.js"></script>
-	<script type="text/javascript" src="json2.js"></script>
+	<script type="text/javascript" src="jquery-ui-1.8.2.custom.min.js"></script>
 	<script type="text/javascript" src="jquery.json-2.2.min.js"></script>
-	<script type="text/javascript" src="reformed.js"></script>	
+	<script type="text/javascript" src="jquery.reformed.js"></script>
 	<script type="text/javascript">
-	var json = {};
-	var reform = '';
-	$(document).ready(function() {
-	
+	$(document).ready(function() {	
 		$('#reformthis').click(function() {
-			var reformed = $('#reformed').empty();
-			reform = $.parseJSON($('#input').val());
-			for (attrname in reform) {
-				reformed.append(kvp_t(attrname, reform[attrname]));
-			}
+			$.reform($('#input').val(), '#reformed');
 		});
 		
+		$('#jsonthis').click(function() {
+			$('#output').val($.rejson('#reformed'));
+		});
+		
+		// clean up the JSON code
 		$('#prettythis').click(function() {
 			$('#input').val(JSON.stringify($.parseJSON($('#input').val()), null, '\t'));
 		});
 		
-		$('#jsonthis').click(function() {
-			$('#reformed > .kvp').each(function (idx) {
-			    _kvp = kvp($(this));
-			    for (attrname in _kvp) {
-			    	json[attrname] = _kvp[attrname];
-			    }
-			});
-			
-			$('#output').val($.toJSON(json));
-		});
-		
+		// synchronized scrolling of before & after
 		$('#input').scroll(function() {
 		    $('#output')
 		    .scrollTop($('#input').scrollTop());
@@ -46,9 +34,6 @@
 		});
 	});
 	</script>
-
-	<style type="text/css">
-	</style>
 	<link rel="stylesheet" type="text/css" href="reformed.css" />
 </head>
 <body>

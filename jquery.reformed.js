@@ -8,14 +8,55 @@
  *
  **/
 
+/**
+ * @param string json String version of JSON object to reform
+ * @param string here Selector of HTML element to place form inside
+ */
+jQuery.reform = function(json, here) {
+	var reformed = $(here).empty();
+	reform = $.parseJSON(json);
+	for (attrname in reform) {
+		reformed.append(kvp_t(attrname, reform[attrname]));
+	}
+	// TODO: make sortablility configurable
+	$(here).sortable({handle:'span.handle', 'items':'.kvp', placeholder: 'ui-state-highlight'});
+};
+
+/**
+ * Deserialize re:form.ed HTML From to JSON string
+ *
+ * @param string from Selector of HTML element that contains the re:form.ed form
+ */
+jQuery.rejson = function(from) {
+	var _json = {};
+	$(from + ' > .kvp').each(function () {
+	    _kvp = kvp($(this));
+	    for (attrname in _kvp) {
+	    	if (_json[attrname]) {
+	    		alert('key conflict');
+	    		$(this).css('background-color', 'red');
+	    		return false;
+	    	}
+	    	_json[attrname] = _kvp[attrname];
+	    }
+	});
+	
+	return jQuery.toJSON(_json);
+};
+
+jQuery.fn.another_kvp = function () {
+	this.after(kvp_t('', ''));
+};
+
 /******* JSON Creation from HTML Form serialization functions *******/
 /**
  * Key Value Pair - one input + another input || a fieldset (an object or array)
  **/
 function kvp(el) {
 	var _kvp = {};
-	var k = el.children().val();
-	var v = $(el.children()[1]);
+	// TODO: add classes to inputs/fieldsets to make selecting more reliable?
+	var k = el.children('input, fieldset').val();
+	var v = $(el.children('input, fieldset')[1]);
 	if (v[0].tagName == 'INPUT') {
 	    _kvp[k] = (isNaN(v.val()) ? v.val() : parseInt(v.val()));
 	} else if (v.hasClass('array')) {
@@ -55,7 +96,7 @@ function obj(el) {
 
 /** templates **/
 function kvp_t(key, value) {
-	var output = '<div class="kvp"><input type="text" value="'+key+'" />';
+	var output = '<div class="kvp"><span class="handle">drag</span> <input type="text" value="'+key+'" class="key" />';
 	if (typeof value == 'string' || typeof value == 'number') {
 		output += '<input type="text" value="'+value+'" />';
 	} else if (jQuery.isPlainObject(value)) {
@@ -63,6 +104,7 @@ function kvp_t(key, value) {
 	} else if (jQuery.isArray(value)) {
 		output += array_t(value);
 	}
+	output += '<a class="link" onclick="jQuery(this).parent().another_kvp()">+</a>';
 	output += '</div>'
 	return output;
 }
