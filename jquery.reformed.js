@@ -20,6 +20,12 @@ jQuery.reform = function(json, here) {
 	}
 	// TODO: make sortablility configurable
 	$(here).sortable({handle:'span.handle', 'items':'.kvp', placeholder: 'ui-state-highlight'});
+	$(here).find('.kvp a.remove').live('click', function() {
+		jQuery(this).parent().remove_kvp();
+	});
+	$(here).find('.kvp a.another').live('click', function() {
+		jQuery(this).parent().another_kvp();
+	});
 };
 
 /**
@@ -45,7 +51,11 @@ jQuery.rejson = function(from) {
 };
 
 jQuery.fn.another_kvp = function () {
-	this.after(kvp_t('', ''));
+	this.parent().after(kvp_t('', ''));
+};
+
+jQuery.fn.remove_kvp = function () {
+	this.parent().remove();	
 };
 
 /******* JSON Creation from HTML Form serialization functions *******/
@@ -55,8 +65,8 @@ jQuery.fn.another_kvp = function () {
 function kvp(el) {
 	var _kvp = {};
 	// TODO: add classes to inputs/fieldsets to make selecting more reliable?
-	var k = el.children('input, fieldset').val();
-	var v = $(el.children('input, fieldset')[1]);
+	var k = el.find('div.front > input, fieldset').val();
+	var v = $(el.find('div.front > input, fieldset')[1]);
 	if (v[0].tagName == 'INPUT') {
 	    _kvp[k] = (isNaN(v.val()) ? v.val() : parseInt(v.val()));
 	} else if (v.hasClass('array')) {
@@ -96,16 +106,16 @@ function obj(el) {
 
 /** templates **/
 function kvp_t(key, value) {
-	var output = '<div class="kvp"><span class="handle">drag</span> <input type="text" value="'+key+'" class="key" />';
+	var output = '<div class="kvp"><div class="front"><span class="handle">drag</span> <input type="text" value="'+key+'" class="key" />';
 	if (typeof value == 'string' || typeof value == 'number') {
-		output += '<input type="text" value="'+value+'" />';
+		output += '<input class="value" type="text" value="'+value+'" />';
 	} else if (jQuery.isPlainObject(value)) {
 		output += object_t(value);
 	} else if (jQuery.isArray(value)) {
 		output += array_t(value);
 	}
-	output += '<a class="link" onclick="jQuery(this).parent().another_kvp()">+</a>';
-	output += '</div>'
+	output += '</div><div class="actions"><a class="configure">@</a><a class="another"">+</a><a class="remove">-</a></div>';
+	output += '</div>';
 	return output;
 }
 

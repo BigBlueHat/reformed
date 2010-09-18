@@ -19,11 +19,31 @@ h1 a em{
 .kvp{
 	padding: 3px;
 	margin: 2px;
+	overflow: hidden;
 }
 .kvp input.key{
 	background: lightblue;
 	border: 1px solid #333;
 	padding: 3px;
+}
+.kvp .front, .kvp .actions{
+	float: left;
+}
+.kvp a.another, .kvp a.remove, .kvp a.configure{
+	cursor: pointer;
+	background: url(images/plus-small.png) no-repeat;
+	display: block;
+	width: 12px;
+	height: 12px;
+	margin-top:3px;
+	text-indent: -9000px;
+	float: left;
+}
+.kvp a.remove{
+	background: url(images/minus-small.png) no-repeat;
+}
+.kvp a.configure{
+	background: url(images/gear-small.png) no-repeat;
 }
 .object{
 	border: 1px dotted #999;
@@ -44,6 +64,12 @@ h1 a em{
 }
 .handle{
 	cursor: move;
+	background: url(images/arrow-move.png) 0 5px no-repeat;
+	display:block;
+	float: left;
+	width: 20px;
+	height: 20px;
+	text-indent: -9000px
 }
 .ui-state-highlight { height: 1.5em; line-height: 1.2em; background: #eee}
 
