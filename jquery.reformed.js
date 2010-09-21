@@ -50,9 +50,9 @@
 			if (typeof value == 'string' || typeof value == 'number') {
 				output += '<input class="value" type="text" value="'+value+'" />';
 			} else if ($.isPlainObject(value)) {
-				output += this.object(value);
+				output += reformed.object(value);
 			} else if ($.isArray(value)) {
-				output += this.array(value);
+				output += reformed.array(value);
 			} else if (typeof value == 'boolean') {
 				output += '<input class="value" type="checkbox"';
 				if (value) output+= 'checked="checked"';
@@ -69,7 +69,7 @@
 		object: function(object) {
 			var output = '<fieldset class="object">';
 			for (attrname in object) {
-				output += this.kvp(attrname, object[attrname]);
+				output += reformed.kvp(attrname, object[attrname]);
 			}
 			output += '</fieldset>';
 			return output;
@@ -81,9 +81,9 @@
 				if (typeof value == 'string' || typeof value == 'number') {
 					output += '<input type="text" value="'+value+'" />';
 				} else if ($.isPlainObject(value)) {
-					output += this.object(value);
+					output += reformed.object(value);
 				} else if ($.isArray(value)) {
-					output += this.array(value);
+					output += reformed.array(value);
 				}
 			});
 			output += '</fieldset>';
