@@ -26,6 +26,12 @@ h1 a em{
 	border: 1px solid #333;
 	padding: 3px;
 }
+.kvp label.key{
+  display:inline-block;
+  color:black;
+  text-transform:capitalize;
+  width:8em;
+}
 .kvp .front, .kvp .actions{
 	float: left;
 }
@@ -87,7 +93,7 @@ h1 a em{
 	margin: 15px 0;
 }
 
-#reformthis{
+#reformforjson{
 	font-weight: bold;
 }
 #jsonthis{

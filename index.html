@@ -8,30 +8,30 @@
 	<script type="text/javascript" src="jquery.json-2.2.min.js"></script>
 	<script type="text/javascript" src="jquery.reformed.js"></script>
 	<script type="text/javascript">
-	$(document).ready(function() {	
-		$('#reformthis').click(function() {
-			$('#reformed').reform($('#input').val());
+	$(document).ready(function() {
+		$('#reformforjson').click(function() {
+			$('#reformed').reform($('#input').val(), {'editor':'json'});
 		});
 
-		$('#reformthisschema').click(function() {
-			$('#reformed').reform($('#input').val(), true);
+		$('#reformfordataentry').click(function() {
+			$('#reformed').reform($('#input').val(), {'editor':'data'});
 		});
 
 		$('#jsonthis').click(function() {
 			$('#output').val($.rejson('#reformed'));
 		});
-		
+
 		// clean up the JSON code
 		$('#prettythis').click(function() {
 			$('#input').val(JSON.stringify($.parseJSON($('#input').val()), null, '\t'));
 		});
-		
+
 		// synchronized scrolling of before & after
 		$('#input').scroll(function() {
 		    $('#output')
 		    .scrollTop($('#input').scrollTop());
 		});
-		
+
 		$('#output').scroll(function() {
 		    $('#input')
 		    .scrollTop($('#output').scrollTop());
@@ -72,18 +72,18 @@
 		]
 	}
 	</textarea>
-	
+
 	<div class="buttons">
-	<input type="button" value="re:form the above JSON" id="reformthis" />
-	<input type="button" value="re:form JSON as a Schema" id="reformthisschema" />
+	<input type="button" value="re:form for JSON editing" id="reformforjson" />
+	<input type="button" value="re:form for data entry" id="reformfordataentry" />
 	<input type="button" value="pretty the JSON" id="prettythis" />
 	</div>
 </div>
 <div class="right">
 	<textarea id="output">
-	
+
 	</textarea>
-	
+
 	<div class="buttons">
 	<input type="button" value="re:JSON the form below" id="jsonthis" />
 	</div>

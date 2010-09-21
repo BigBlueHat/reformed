@@ -13,18 +13,86 @@
  * @param string here Selector of HTML element to place form inside
  */
 (function($) {
-$.fn.reform = function(json, is_schema) {
-	this.empty();
-	reform = $.parseJSON(json);
-	this.append(object_t(reform));
-	// TODO: make sortablility configurable
-	this.sortable({handle:'span.handle', 'items':'.kvp', placeholder: 'ui-state-highlight'});
-	this.find('.kvp a.remove').live('click', function() {
-		jQuery(this).parent().remove_kvp();
-	});
-	this.find('.kvp a.another').live('click', function() {
-		jQuery(this).parent().another_kvp();
-	});
+/******** Form Creation System ********/
+	var reformed = {
+		settings: {
+			'editor':'json' // schema, data, json
+		},
+		init: function(json, options) {
+			var $this = $(this);
+			// TODO: refactor to make options truely optional
+			if (options) {
+        $.extend(reformed.settings, options);
+      }
+			reform = $.parseJSON(json);
+
+			$this.empty().append(reformed.object(reform));
+			// TODO: make sortablility configurable
+			if (reformed.settings.editor != 'data') {
+				$this.sortable({handle:'span.handle', 'items':'.kvp', placeholder: 'ui-state-highlight'});
+				$this.find('.kvp a.remove').live('click', function() {
+					$(this).parent().remove_kvp();
+				});
+				$this.find('.kvp a.another').live('click', function() {
+					$(this).parent().another_kvp();
+				});
+			}
+			return $this;
+		},
+		kvp: function(key, value) {
+			var output = '<div class="kvp"><div class="front">';
+			if (reformed.settings.editor != 'data') {
+				output += '<span class="handle">drag</span> ';
+				output += '<input type="text" value="'+key+'" class="key" />';
+			} else {
+				output += '<label class="key">'+key+'</label>';
+			}
+			if (typeof value == 'string' || typeof value == 'number') {
+				output += '<input class="value" type="text" value="'+value+'" />';
+			} else if ($.isPlainObject(value)) {
+				output += this.object(value);
+			} else if ($.isArray(value)) {
+				output += this.array(value);
+			} else if (typeof value == 'boolean') {
+				output += '<input class="value" type="checkbox"';
+				if (value) output+= 'checked="checked"';
+				output += ' />';
+			}
+			output += '</div>';
+			if (reformed.settings.editor != 'data') {
+				output += '<div class="actions"><a class="configure">@</a><a class="another"">+</a><a class="remove">-</a></div>';
+			}
+			output += '</div>';
+			return output;
+		},
+
+		object: function(object) {
+			var output = '<fieldset class="object">';
+			for (attrname in object) {
+				output += this.kvp(attrname, object[attrname]);
+			}
+			output += '</fieldset>';
+			return output;
+		},
+
+		array: function(array) {
+			var output = '<fieldset class="array">';
+			$.each(array, function (index, value) {
+				if (typeof value == 'string' || typeof value == 'number') {
+					output += '<input type="text" value="'+value+'" />';
+				} else if ($.isPlainObject(value)) {
+					output += this.object(value);
+				} else if ($.isArray(value)) {
+					output += this.array(value);
+				}
+			});
+			output += '</fieldset>';
+			return output;
+		}
+	};
+
+$.fn.reform = function(json, options) {
+	reformed.init.apply(this, arguments);
 };
 
 /**
@@ -45,16 +113,16 @@ $.rejson = function(from) {
 	    	_json[attrname] = _kvp[attrname];
 	    }
 	});
-	
+
 	return $.toJSON(_json);
 };
 
 $.fn.another_kvp = function () {
-	this.parent().after(kvp_t('', ''));
+	this.parent().after(reformed.kvp('', ''));
 };
 
 $.fn.remove_kvp = function () {
-	this.parent().remove();	
+	this.parent().remove();
 };
 
 /******* JSON Creation from HTML Form serialization functions *******/
@@ -64,8 +132,13 @@ $.fn.remove_kvp = function () {
 function kvp(el) {
 	var _kvp = {};
 	// TODO: add classes to inputs/fieldsets to make selecting more reliable?
-	var k = el.find('div.front > input, fieldset').val();
-	var v = $(el.find('div.front > input, fieldset')[1]);
+	if (reformed.settings.editor != 'data') {
+		var k = el.find('div.front > input, fieldset').val();
+		var v = $(el.find('div.front > input, fieldset')[1]);
+	} else {
+		var k = el.find('div.front > label.key').html();
+		var v = $(el.find('div.front > input, fieldset')[0]);
+	}
 	if (v.is('input')) {
 		if (v.is(':checkbox')) {
 			_kvp[k] = v.is(':checked');
@@ -102,52 +175,6 @@ function obj(el) {
 	    }
 	});
 	return _obj;
-}
-
-
-/******** Form Creation System ********/
-
-/** templates **/
-function kvp_t(key, value) {
-	var output = '<div class="kvp"><div class="front"><span class="handle">drag</span> <input type="text" value="'+key+'" class="key" />';
-	if (typeof value == 'string' || typeof value == 'number') {
-		output += '<input class="value" type="text" value="'+value+'" />';
-	} else if ($.isPlainObject(value)) {
-		output += object_t(value);
-	} else if ($.isArray(value)) {
-		output += array_t(value);
-	} else if (typeof value == 'boolean') {
-		output += '<input class="value" type="checkbox"';
-		if (value) output+= 'checked="checked"';
-		output += ' />';
-	}
-	output += '</div><div class="actions"><a class="configure">@</a><a class="another"">+</a><a class="remove">-</a></div>';
-	output += '</div>';
-	return output;
-}
-
-function object_t(object) {
-	var output = '<fieldset class="object">';
-	for (attrname in object) {
-		output += kvp_t(attrname, object[attrname]);
-	}
-	output += '</fieldset>';
-	return output;
-}
-
-function array_t(array) {
-	var output = '<fieldset class="array">';
-	$.each(array, function (index, value) {
-		if (typeof value == 'string' || typeof value == 'number') {
-			output += '<input type="text" value="'+value+'" />';
-		} else if ($.isPlainObject(value)) {
-			output += object_t(value);
-		} else if ($.isArray(value)) {
-			output += array_t(value);
-		}
-	});
-	output += '</fieldset>';
-	return output;
 }
 
 })(jQuery);
