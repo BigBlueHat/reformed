@@ -12,18 +12,17 @@
  * @param string json String version of JSON object to reform
  * @param string here Selector of HTML element to place form inside
  */
-jQuery.reform = function(json, here) {
-	var reformed = $(here).empty();
+(function($) {
+$.fn.reform = function(json, is_schema) {
+	this.empty();
 	reform = $.parseJSON(json);
-	for (attrname in reform) {
-		reformed.append(kvp_t(attrname, reform[attrname]));
-	}
+	this.append(object_t(reform));
 	// TODO: make sortablility configurable
-	$(here).sortable({handle:'span.handle', 'items':'.kvp', placeholder: 'ui-state-highlight'});
-	$(here).find('.kvp a.remove').live('click', function() {
+	this.sortable({handle:'span.handle', 'items':'.kvp', placeholder: 'ui-state-highlight'});
+	this.find('.kvp a.remove').live('click', function() {
 		jQuery(this).parent().remove_kvp();
 	});
-	$(here).find('.kvp a.another').live('click', function() {
+	this.find('.kvp a.another').live('click', function() {
 		jQuery(this).parent().another_kvp();
 	});
 };
@@ -33,9 +32,9 @@ jQuery.reform = function(json, here) {
  *
  * @param string from Selector of HTML element that contains the re:form.ed form
  */
-jQuery.rejson = function(from) {
+$.rejson = function(from) {
 	var _json = {};
-	$(from + ' > .kvp').each(function () {
+	$(from + ' > fieldset.object > .kvp').each(function () {
 	    _kvp = kvp($(this));
 	    for (attrname in _kvp) {
 	    	if (_json[attrname]) {
@@ -47,14 +46,14 @@ jQuery.rejson = function(from) {
 	    }
 	});
 	
-	return jQuery.toJSON(_json);
+	return $.toJSON(_json);
 };
 
-jQuery.fn.another_kvp = function () {
+$.fn.another_kvp = function () {
 	this.parent().after(kvp_t('', ''));
 };
 
-jQuery.fn.remove_kvp = function () {
+$.fn.remove_kvp = function () {
 	this.parent().remove();	
 };
 
@@ -67,8 +66,12 @@ function kvp(el) {
 	// TODO: add classes to inputs/fieldsets to make selecting more reliable?
 	var k = el.find('div.front > input, fieldset').val();
 	var v = $(el.find('div.front > input, fieldset')[1]);
-	if (v[0].tagName == 'INPUT') {
-	    _kvp[k] = (isNaN(v.val()) ? v.val() : parseInt(v.val()));
+	if (v.is('input')) {
+		if (v.is(':checkbox')) {
+			_kvp[k] = v.is(':checked');
+		} else {
+			_kvp[k] = (isNaN(v.val()) ? v.val() : parseInt(v.val()));
+		}
 	} else if (v.hasClass('array')) {
 		var _ary = [];
 		if (v.children('fieldset.object').length > 0) {
@@ -109,10 +112,14 @@ function kvp_t(key, value) {
 	var output = '<div class="kvp"><div class="front"><span class="handle">drag</span> <input type="text" value="'+key+'" class="key" />';
 	if (typeof value == 'string' || typeof value == 'number') {
 		output += '<input class="value" type="text" value="'+value+'" />';
-	} else if (jQuery.isPlainObject(value)) {
+	} else if ($.isPlainObject(value)) {
 		output += object_t(value);
-	} else if (jQuery.isArray(value)) {
+	} else if ($.isArray(value)) {
 		output += array_t(value);
+	} else if (typeof value == 'boolean') {
+		output += '<input class="value" type="checkbox"';
+		if (value) output+= 'checked="checked"';
+		output += ' />';
 	}
 	output += '</div><div class="actions"><a class="configure">@</a><a class="another"">+</a><a class="remove">-</a></div>';
 	output += '</div>';
@@ -133,12 +140,14 @@ function array_t(array) {
 	$.each(array, function (index, value) {
 		if (typeof value == 'string' || typeof value == 'number') {
 			output += '<input type="text" value="'+value+'" />';
-		} else if (jQuery.isPlainObject(value)) {
+		} else if ($.isPlainObject(value)) {
 			output += object_t(value);
-		} else if (jQuery.isArray(value)) {
+		} else if ($.isArray(value)) {
 			output += array_t(value);
 		}
 	});
 	output += '</fieldset>';
 	return output;
 }
+
+})(jQuery);

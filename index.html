@@ -10,9 +10,13 @@
 	<script type="text/javascript">
 	$(document).ready(function() {	
 		$('#reformthis').click(function() {
-			$.reform($('#input').val(), '#reformed');
+			$('#reformed').reform($('#input').val());
 		});
-		
+
+		$('#reformthisschema').click(function() {
+			$('#reformed').reform($('#input').val(), true);
+		});
+
 		$('#jsonthis').click(function() {
 			$('#output').val($.rejson('#reformed'));
 		});
@@ -71,7 +75,8 @@
 	
 	<div class="buttons">
 	<input type="button" value="re:form the above JSON" id="reformthis" />
-	<input type="button" value="(optional) pretty print the above JSON" id="prettythis" />
+	<input type="button" value="re:form JSON as a Schema" id="reformthisschema" />
+	<input type="button" value="pretty the JSON" id="prettythis" />
 	</div>
 </div>
 <div class="right">
