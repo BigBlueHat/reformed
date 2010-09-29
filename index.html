@@ -3,41 +3,6 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>reformed</title>
-	<script type="text/javascript" src="jquery.1.4.2.min.js"></script>
-	<script type="text/javascript" src="jquery-ui-1.8.2.custom.min.js"></script>
-	<script type="text/javascript" src="jquery.json-2.2.min.js"></script>
-	<script type="text/javascript" src="jquery.reformed.js"></script>
-	<script type="text/javascript">
-	$(document).ready(function() {
-		$('#reformforjson').click(function() {
-			$('#reformed').reform($('#input').val(), {'editor':'json'});
-		});
-
-		$('#reformfordataentry').click(function() {
-			$('#reformed').reform($('#input').val(), {'editor':'data'});
-		});
-
-		$('#jsonthis').click(function() {
-			$('#output').val($.rejson('#reformed'));
-		});
-
-		// clean up the JSON code
-		$('#prettythis').click(function() {
-			$('#input').val(JSON.stringify($.parseJSON($('#input').val()), null, '\t'));
-		});
-
-		// synchronized scrolling of before & after
-		$('#input').scroll(function() {
-		    $('#output')
-		    .scrollTop($('#input').scrollTop());
-		});
-
-		$('#output').scroll(function() {
-		    $('#input')
-		    .scrollTop($('#output').scrollTop());
-		});
-	});
-	</script>
 	<link rel="stylesheet" type="text/css" href="reformed.css" />
 </head>
 <body>
@@ -158,5 +123,40 @@
 		</div>
 	</form>
 
+	<script type="text/javascript" src="js/jquery.1.4.2.min.js"></script>
+	<script type="text/javascript" src="js/jquery-ui-1.8.2.custom.min.js"></script>
+	<script type="text/javascript" src="js/jquery.json-2.2.min.js"></script>
+	<script type="text/javascript" src="js/jquery.reformed.js"></script>
+	<script type="text/javascript">
+	$(document).ready(function() {
+		$('#reformforjson').click(function() {
+			$('#reformed').reform($('#input').val(), {'editor':'json'});
+		});
+
+		$('#reformfordataentry').click(function() {
+			$('#reformed').reform($('#input').val(), {'editor':'data'});
+		});
+
+		$('#jsonthis').click(function() {
+			$('#output').val($.rejson('#reformed'));
+		});
+
+		// clean up the JSON code
+		$('#prettythis').click(function() {
+			$('#input').val(JSON.stringify($.parseJSON($('#input').val()), null, '\t'));
+		});
+
+		// synchronized scrolling of before & after
+		$('#input').scroll(function() {
+		    $('#output')
+		    .scrollTop($('#input').scrollTop());
+		});
+
+		$('#output').scroll(function() {
+		    $('#input')
+		    .scrollTop($('#output').scrollTop());
+		});
+	});
+	</script>
 </body>
 </html>
