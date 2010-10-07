@@ -1,0 +1,22 @@
+<div class="kvp">
+		<div class="front">
+				<span class="handle">drag</span>
+				<input type="text" value="{{key}}" class="key" />
+				{{#is_string}}
+						<input class="value" type="text" value="{{value}}" />
+				{{/is_string}}
+				{{#is_number}}
+						<input class="value" type="number" value="{{value}}" />
+				{{/is_number}}
+				{{#is_object}}
+						{{> object_template}}
+				{{/is_object}}
+				{{#is_array}}
+						{{> array_template}}
+				{{/is_array}}
+				{{#is_boolean}}
+						<input class="value" type="checkbox" {{#value}}checked="checked"{{/value}} />
+				{{/is_boolean}}
+		</div>
+		<div class="actions"><a class="configure">@</a><a class="another"">+</a><a class="remove">-</a></div>
+</div>

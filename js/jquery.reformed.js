@@ -18,6 +18,101 @@
 		settings: {
 			'editor':'json' // schema, data, json
 		},
+		templates: {
+			'json': {
+				"kvp":
+					"<div class='kvp'>\
+							<div class='front'>\
+									<span class='handle'>drag</span>\
+									<input type='text' value='{{key}}' class='key' />\
+									{{#string}}\
+											<input class='value' type='text' value='{{value}}' />\
+									{{/string}}\
+									{{#number}}\
+											<input class='value' type='number' value='{{value}}' />\
+									{{/number}}\
+									{{#object}}\
+											{{> obj}}\
+									{{/object}}\
+									{{#array}}\
+											{{> ary}}\
+									{{/array}}\
+									{{#boolean}}\
+											<input class='value' type='checkbox' {{#value}}checked='checked'{{/value}} />\
+									{{/boolean}}\
+							</div>\
+							<div class='actions'><a class='configure'>@</a><a class='another''>+</a><a class='remove'>-</a></div>\
+					</div>",
+				"partials": {
+					"obj":
+						"<fieldset class='object'>\
+						{{> kvp}}\
+						</fieldset>",
+					"ary":
+						"this is an array",
+					"kvp":
+						"<div class='kvp'>\
+							<div class='front'>\
+									<span class='handle'>drag</span>\
+									<input type='text' value='{{key}}' class='key' />\
+									{{#string}}\
+											<input class='value' type='text' value='{{value}}' />\
+									{{/string}}\
+									{{#number}}\
+											<input class='value' type='number' value='{{value}}' />\
+									{{/number}}\
+									{{#object}}\
+										{{> obj}}\
+									{{/object}}\
+									{{#array}}\
+											{{> ary}}\
+									{{/array}}\
+									{{#boolean}}\
+											<input class='value' type='checkbox' {{#value}}checked='checked'{{/value}} />\
+									{{/boolean}}\
+							</div>\
+							<div class='actions'><a class='configure'>@</a><a class='another''>+</a><a class='remove'>-</a></div>\
+						</div>",
+					},
+				"object": function(items, fn) {
+					if (typeof items.value == 'object') {
+						out = "";
+						for (var attrname in items.value) {
+							obj = {key: attrname, value: items.value[attrname]};
+							out += fn(obj);
+						}
+						return out;
+					} else {
+						return '';
+					}
+				},
+				"array": function(items, fn) {
+					if (typeof items.value == 'object' && typeof items.value.length == 'number') {
+						out = '';
+						items.value.forEach(function (el, idx) {
+							out += fn(el);
+						});
+						return out;
+					} else {
+						return '';
+					}
+				},
+				"string": function(items, fn) {
+					if (typeof items.value == 'string') {
+						return fn(this);
+					} else {
+						return '';
+					}
+				},
+				"number": function(items, fn) {
+					if (typeof items.value == 'number') {
+						return fn(this);
+					} else {
+						return '';
+					}
+				}
+			}
+		},
 		init: function(json, options) {
 			var $this = $(this);
 			// TODO: refactor to make options truely optional
@@ -40,7 +135,11 @@
 			return $this;
 		},
 		kvp: function(key, value) {
-			var output = '<div class="kvp"><div class="front">';
+			var data = {key: key, value: value, editor: reformed.settings.editor};
+			//data[typeof value] = true;
+			var output = Handlebars.compile(reformed.templates[reformed.settings.editor].kvp);
+
+			/*var output = '<div class="kvp"><div class="front">';
 			if (reformed.settings.editor != 'data') {
 				output += '<span class="handle">drag</span> ';
 				output += '<input type="text" value="'+key+'" class="key" />';
@@ -62,8 +161,10 @@
 			if (reformed.settings.editor != 'data') {
 				output += '<div class="actions"><a class="configure">@</a><a class="another"">+</a><a class="remove">-</a></div>';
 			}
-			output += '</div>';
-			return output;
+			output += '</div>';*/
+			return output(
+															data,
+															reformed.templates[reformed.settings.editor]);
 		},
 
 		object: function(object) {
