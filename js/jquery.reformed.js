@@ -47,8 +47,10 @@
 			} else {
 				output += '<label class="key">'+key+'</label>';
 			}
+
 			if (typeof value == 'string' || typeof value == 'number') {
-				output += '<input class="value" type="text" value="'+value+'" />';
+				type = typecheck.test(value);
+				output += '<input class="value" type="'+type+'" value="'+value+'" />';
 			} else if ($.isPlainObject(value)) {
 				output += reformed.object(value);
 			} else if ($.isArray(value)) {
@@ -94,6 +96,63 @@
 $.fn.reform = function(json, options) {
 	reformed.init.apply(this, arguments);
 };
+
+	// http://ajax.microsoft.com/ajax/jquery.validate/1.7/jquery.validate.js
+	var typecheck = {
+		test: function(value) {
+			for (var type in this.types) {
+				if (typeof this.types[type] == 'function' && this.types[type](value)) {
+					return type;
+				} else if (typeof this.types[type] == 'object' && this.types[type].test(value)) {
+					return type;
+				}
+			}
+			return false;
+		},
+		types: {
+			// TODO: should we assume that strings containing numbers are numbers or strings (for validation/form helpers)?
+			number: function(value) {
+				return !isNaN(value) || typeof value == 'number';
+			},
+
+			// http://docs.jquery.com/Plugins/Validation/Methods/email
+			email:
+				// contributed by Scott Gonzalez: http://projects.scottsplayground.com/email_address_validation/
+				/^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?$/i,
+
+			// http://docs.jquery.com/Plugins/Validation/Methods/url
+			url:
+				// contributed by Scott Gonzalez: http://projects.scottsplayground.com/iri/
+				/^(https?|ftp):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i,
+
+			// http://ajax.microsoft.com/ajax/jquery.validate/1.7/additional-methods.js
+			time: /^([01][0-9])|(2[0123]):([0-5])([0-9])$/,
+
+			// pulled from various regex sources
+			color: /^#?([a-f]|[A-F]|[0-9]){3}(([a-f]|[A-F]|[0-9]){3})?$/,
+
+			month: /^\d{4}-\d{2}$/,
+
+			date: /^\d{4}-\d{2}-\d{2}$/,
+
+			"datetime-local": function(value) {
+				var bits = value.split('T');
+				if (this.date(bits[0]) && this.time(bits[1])) {
+					return true;
+				} else {
+					return false;
+				}
+			},
+
+			datetime: function(value) {
+				if (value.substr(-1, 1) == 'Z') {
+					return (this["datetime-local"](value.substr(0, value.length-1)));
+				} else {
+					return false;
+				}
+			}
+		}
+	}
 
 /**
  * Deserialize re:form.ed HTML From to JSON string
