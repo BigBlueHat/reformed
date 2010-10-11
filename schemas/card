@@ -72,14 +72,43 @@
 		"adr":{
 			"type":"object",
 			"properties":{
-				"$ref":"http://json-schema.org/address#properties"
+			 "id":{
+				 "type":"integer"
+			 },
+			 "addr1":{
+				 "type":"string"
+			 },
+			 "addr2":{
+				 "type":"string"
+			 },
+			 "city":{
+				 "type":"string"
+			 },
+			 "state":{
+				 "type":"string"
+			 },
+			 "zip":{
+				 "type":"string"
+			 },
+			 "tstamp":{
+				 "type":"integer",
+				 "format":"date-time"
+			 },
+			 "country":{
+				 "type":"string"
+			 }
 			},
 			"optional":true
 		},
 		"geo":{
 			"type":"object",
 			"properties":{
-				"$ref":"http://json-schema.org/geo#properties"
+			 "latitude":{
+				 "type":"number"
+			 },
+			 "longitude":{
+				 "type":"number"
+			 },
 			},
 			"optional":true
 		},

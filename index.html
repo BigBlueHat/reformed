@@ -19,6 +19,7 @@
 
 <div style="overflow:hidden">
 <div class="left">
+				<div><a id="examplejson" href="">Example JSON</a> | <a id="cardschema" href="">Card Schema</a></div>
 	<textarea id="input">
 	{
 	   "id": "507401517",
@@ -48,8 +49,10 @@
 	</textarea>
 
 	<div class="buttons">
-	<input type="button" value="re:form for JSON editing" id="reformforjson" />
-	<input type="button" value="re:form for data entry" id="reformfordataentry" />
+				re:form for
+	<input type="button" value="JSON editing" id="reformforjson" />
+	<input type="button" value="data entry" id="reformfordataentry" />
+	<input type="button" value="data entry (schema)" id="reformforschemadataentry" />
 	<input type="button" value="pretty the JSON" id="prettythis" />
 	</div>
 </div>
@@ -138,8 +141,23 @@
 	<script type="text/javascript" src="js/jquery.reformed.js"></script>
 	<script type="text/javascript">
 	$(document).ready(function() {
+    // JSON loaders
+		$('#examplejson').click(function(ev) {
+				ev.preventDefault();
+				$.get('example.json',null,function(data) { $('#input').val(data); });
+		});
+		$('#cardschema').click(function(ev) {
+				ev.preventDefault();
+				$.get('schemas/card',null,function(data) { $('#input').val(data); });
+		});
+
+    // re:form-ers
 		$('#reformforjson').click(function() {
-			$('#reformed').reform($('#input').val(), {'editor':'json'});
+			$('#reformed').reform($('#input').val(), {'editor':'edit'});
+		});
+
+		$('#reformforschemadataentry').click(function() {
+			$('#reformed').reform($('#input').val(), {'editor':'schema'});
 		});
 
 		$('#reformfordataentry').click(function() {

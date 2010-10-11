@@ -16,7 +16,7 @@
 /******** Form Creation System ********/
 	var reformed = {
 		settings: {
-			'editor':'json' // schema, data, json
+			'editor':'schema' // schema, data, edit
 		},
 		init: function(json, options) {
 			var $this = $(this);
@@ -26,9 +26,11 @@
       }
 			reform = $.parseJSON(json);
 
+			// create re:form
 			$this.empty().append(reformed.object(reform));
+
 			// TODO: make sortablility configurable
-			if (reformed.settings.editor != 'data') {
+			if (reformed.settings.editor == 'edit') {
 				$this.sortable({handle:'span.handle', 'items':'.kvp', placeholder: 'ui-state-highlight'});
 				$this.find('.kvp a.remove').live('click', function() {
 					$(this).parent().remove_kvp();
@@ -40,28 +42,48 @@
 			return $this;
 		},
 		kvp: function(key, value) {
+			var use_schema = (reformed.settings.editor == 'schema');
 			var output = '<div class="kvp"><div class="front">';
-			if (reformed.settings.editor != 'data') {
+			if (reformed.settings.editor == 'edit') {
 				output += '<span class="handle">drag</span> ';
 				output += '<input type="text" value="'+key+'" class="key" />';
 			} else {
 				output += '<label class="key">'+key+'</label>';
 			}
 
-			if (typeof value == 'string' || typeof value == 'number') {
-				type = typecheck.test(value);
-				output += '<input class="value" type="'+type+'" value="'+value+'" />';
-			} else if ($.isPlainObject(value)) {
-				output += reformed.object(value);
-			} else if ($.isArray(value)) {
-				output += reformed.array(value);
-			} else if (typeof value == 'boolean') {
-				output += '<input class="value" type="checkbox"';
-				if (value) output+= 'checked="checked"';
-				output += ' />';
+			if (use_schema) {
+				var type = (value.format ? value.format : value.type);
+				var title = value.description;
+				var properties = value.properties;
+				var items = value.items;
+				value = (value.default ? value.default : '');
+				if (type != 'array' && type != 'object') {
+					if (type == 'string') type = 'text';
+					if (type == 'integer') type = 'number';
+					if (type == 'date-time') type = 'datetime';
+					output += '<input class="value" type="'+type+'" value="'+value+'" title="'+(title ? title : '')+'" />';
+				} else if (type == 'array') {
+					value = [value];
+					output += reformed.array(value, items);
+				} else if (type == 'object' && properties) {
+					output += reformed.object({'properties':properties});
+				}
+			} else {
+				if ($.isPlainObject(value)) {
+					output += reformed.object(value);
+				} else if ($.isArray(value)) {
+					output += reformed.array(value);
+				} else if (typeof value == 'string' || typeof value == 'number') {
+					type = typecheck.test(value);
+					output += '<input class="value" type="'+type+'" value="'+value+'" />';
+				} else if (typeof value == 'boolean') {
+					output += '<input class="value" type="checkbox"';
+					if (value) output+= 'checked="checked"';
+					output += ' />';
+				}
 			}
 			output += '</div>';
-			if (reformed.settings.editor != 'data') {
+			if (reformed.settings.editor == 'edit') {
 				output += '<div class="actions"><a class="configure">@</a><a class="another"">+</a><a class="remove">-</a></div>';
 			}
 			output += '</div>';
@@ -70,24 +92,38 @@
 
 		object: function(object) {
 			var output = '<fieldset class="object">';
-			for (attrname in object) {
-				output += reformed.kvp(attrname, object[attrname]);
+			if (reformed.settings.editor != 'schema') {
+				for (var attrname in object) {
+					output += reformed.kvp(attrname, object[attrname]);
+				}
+			} else {
+				for (var prop in object['properties']) {
+					output += reformed.kvp(prop, object['properties'][prop]);
+				}
 			}
 			output += '</fieldset>';
 			return output;
 		},
 
-		array: function(array) {
+		array: function(array, items) {
 			var output = '<fieldset class="array">';
-			$.each(array, function (index, value) {
-				if (typeof value == 'string' || typeof value == 'number') {
-					output += '<input type="text" value="'+value+'" />';
-				} else if ($.isPlainObject(value)) {
-					output += reformed.object(value);
-				} else if ($.isArray(value)) {
-					output += reformed.array(value);
-				}
-			});
+			if (items && reformed.settings.editor == 'schema') {
+				$.each(array, function (index, value) {
+					output += '<input type="'+items.type+'" value="'+value+'" />';
+				});
+				// TODO: extend this to handle arrays of objects and arrays of arrays?
+			} else {
+				$.each(array, function (index, value) {
+					if (typeof value == 'string' || typeof value == 'number') {
+						type = typecheck.test(value);
+						output += '<input type="text" value="'+value+'" />';
+					} else if ($.isPlainObject(value)) {
+						output += reformed.object(value);
+					} else if ($.isArray(value)) {
+						output += reformed.array(value);
+					}
+				});
+			}
 			output += '</fieldset>';
 			return output;
 		}
@@ -163,7 +199,7 @@ $.rejson = function(from) {
 	var _json = {};
 	$(from + ' > fieldset.object > .kvp').each(function () {
 	    _kvp = kvp($(this));
-	    for (attrname in _kvp) {
+	    for (var attrname in _kvp) {
 	    	if (_json[attrname]) {
 	    		alert('key conflict');
 	    		$(this).css('background-color', 'red');
@@ -191,7 +227,7 @@ $.fn.remove_kvp = function () {
 function kvp(el) {
 	var _kvp = {};
 	// TODO: add classes to inputs/fieldsets to make selecting more reliable?
-	if (reformed.settings.editor != 'data') {
+	if (reformed.settings.editor == 'edit') {
 		var k = el.find('div.front > input, fieldset').val();
 		var v = $(el.find('div.front > input, fieldset')[1]);
 	} else {
@@ -202,7 +238,12 @@ function kvp(el) {
 		if (v.is(':checkbox')) {
 			_kvp[k] = v.is(':checked');
 		} else {
-			_kvp[k] = (isNaN(v.val()) ? v.val() : parseInt(v.val()));
+			var value = v.val();
+			if (value) {
+				_kvp[k] = (isNaN(value) ? value : parseInt(value));
+			} else {
+				_kvp[k] = value;
+			}
 		}
 	} else if (v.hasClass('array')) {
 		var _ary = [];
