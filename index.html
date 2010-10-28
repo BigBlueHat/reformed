@@ -63,6 +63,7 @@
 
 	<div class="buttons">
 	<input type="button" value="re:JSON the form below" id="jsonthis" />
+	<input type="button" value="save to pastebin.me" id="savepaste" />
 	</div>
 </div>
 </div>
@@ -182,6 +183,25 @@
 		$('#output').scroll(function() {
 		    $('#input')
 		    .scrollTop($('#output').scrollTop());
+		});
+
+		$('#savepaste').click(function() {
+			var that = this, d = new Date();
+			var paste = {
+				date:  d.getTime(),
+				paste: $('#output').val()
+			};
+
+			//$("#save").attr("disabled", "disabled").val("Saving...");
+
+			$.ajax({
+				url:      "http://pastebin.me/pastebin/",
+				type:     "POST",
+				data:     JSON.stringify(paste),
+				dataType: "json",
+				success : function(data) { document.location.href= "/"+data.id; },
+				error:    function(req, status, error) { that.show_error(); }
+			});
 		});
 	});
 	</script>
