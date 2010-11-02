@@ -32,10 +32,10 @@
 			// TODO: make sortablility configurable
 			if (reformed.settings.editor == 'edit') {
 				$this.sortable({handle:'span.handle', 'items':'.kvp', placeholder: 'ui-state-highlight'});
-				$this.find('.kvp a.remove').live('click', function() {
+				$this.find('.kvp a.remove').click(function() {
 					$(this).parent().remove_kvp();
 				});
-				$this.find('.kvp a.another').live('click', function() {
+				$this.find('.kvp a.another').click(function() {
 					$(this).parent().another_kvp();
 				});
 			}
