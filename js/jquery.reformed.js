@@ -22,8 +22,8 @@
 			var $this = $(this);
 			// TODO: refactor to make options truely optional
 			if (options) {
-        $.extend(reformed.settings, options);
-      }
+				$.extend(reformed.settings, options);
+			}
 			reform = $.parseJSON(json);
 
 			// create re:form
@@ -32,14 +32,23 @@
 			// TODO: make sortablility configurable
 			if (reformed.settings.editor == 'edit') {
 				$this.sortable({handle:'span.handle', 'items':'.kvp', placeholder: 'ui-state-highlight'});
-				$this.find('.kvp a.remove').click(function() {
-					$(this).parent().remove_kvp();
-				});
-				$this.find('.kvp a.another').click(function() {
-					$(this).parent().another_kvp();
+				$this.find('> fieldset > .kvp').each(function(idx, el) {
+					reformed.applyEditorEvents(el);
 				});
 			}
 			return $this;
+		},
+		applyEditorEvents: function(el) {
+			el = $(el);
+			el.find('a.remove').click(function() {
+				$(this).parent().remove_kvp();
+			});
+			el.find('a.another').click(function() {
+				$(this).parent().another_kvp();
+			});
+			el.find('.front > input').bind('keydown', 'alt+tab', function() {
+				$(this).parent().another_kvp();
+			});
 		},
 		kvp: function(key, value) {
 			var use_schema = (reformed.settings.editor == 'schema');
@@ -213,7 +222,9 @@ $.rejson = function(from) {
 };
 
 $.fn.another_kvp = function () {
-	this.parent().after(reformed.kvp('', ''));
+	var el = this.parent().after(reformed.kvp('', '')).next();
+	el.find('.key').focus();
+	reformed.applyEditorEvents(el);
 };
 
 $.fn.remove_kvp = function () {
