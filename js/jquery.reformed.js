@@ -83,12 +83,23 @@
 				} else if ($.isArray(value)) {
 					output += reformed.array(value);
 				} else if (typeof value == 'string' || typeof value == 'number') {
-					type = typecheck.test(value);
-					output += '<input class="value" type="'+type+'" value="'+value+'" />';
+				  if (typeof value == 'string'
+  				&&
+    				(value.search(/<[^>]*>/g) > -1
+    				|| value.search(/^(?:\s*)function(?:\s*)\(/) > -1)) {
+				    output += '<textarea class="value">'+value+'</textarea>';
+				  } else {
+  					type = typecheck.test(value);
+  					output += '<input class="value" type="'+type+'" value="'+value+'" />';
+				  }
 				} else if (typeof value == 'boolean') {
-					output += '<input class="value" type="checkbox"';
-					if (value) output+= 'checked="checked"';
-					output += ' />';
+				  if (reformed.settings.editor == 'edit') {
+				    output += '<input class="value" type="text" value="'+value+'" />';
+				  } else {
+  					output += '<input class="value" type="checkbox"';
+  					if (value) output+= 'checked="checked"';
+  					output += ' />';
+				  }
 				}
 			}
 			output += '</div>';
@@ -240,12 +251,12 @@ function kvp(el) {
 	// TODO: add classes to inputs/fieldsets to make selecting more reliable?
 	if (reformed.settings.editor == 'edit') {
 		var k = el.find('div.front > input, fieldset').val();
-		var v = $(el.find('div.front > input, fieldset')[1]);
+		var v = $(el.find('div.front > input, div.front > textarea, fieldset')[1]);
 	} else {
 		var k = el.find('div.front > label.key').html();
-		var v = $(el.find('div.front > input, fieldset')[0]);
+		var v = $(el.find('div.front > input, div.front > textarea, fieldset')[0]);
 	}
-	if (v.is('input')) {
+	if (v.is('input') || v.is('textarea')) {
 		if (v.is(':checkbox')) {
 			_kvp[k] = v.is(':checked');
 		} else {

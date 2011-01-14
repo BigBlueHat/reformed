@@ -17,15 +17,18 @@ h1 a em{
 	font-style: normal;
 }
 h5{text-align:center;margin-top:-3em;margin-left:-10em}
+textarea{width:35em;height:10em}
 .kvp{
 	padding: 3px;
 	margin: 2px;
 	overflow: hidden;
+	white-space: nowrap;
 }
 .kvp input.key{
 	background: lightblue;
 	border: 1px solid #333;
 	padding: 3px;
+	float:left;
 }
 .kvp label.key{
   display:inline-block;
@@ -55,6 +58,7 @@ h5{text-align:center;margin-top:-3em;margin-left:-10em}
 .object{
 	border: 1px dotted #999;
 	margin-left: 15px;
+	clear:both;
 }
 .array{
 	border: 1px dashed #999;
