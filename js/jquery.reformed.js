@@ -65,7 +65,6 @@
 				var title = value.description;
 				var properties = value.properties;
 				var items = value.items;
-				value = (value.default ? value.default : '');
 				if (type != 'array' && type != 'object') {
 					if (type == 'string') type = 'text';
 					if (type == 'integer') type = 'number';
@@ -83,11 +82,10 @@
 				} else if ($.isArray(value)) {
 					output += reformed.array(value);
 				} else if (typeof value == 'string' || typeof value == 'number') {
-				  if (typeof value == 'string'
-  				&&
-    				(value.search(/<[^>]*>/g) > -1
-    				|| value.search(/^(?:\s*)function(?:\s*)\(/) > -1)) {
-				    output += '<textarea class="value">'+value+'</textarea>';
+				  if (typeof value == 'string' && value.search(/<[^>]*>/g) > -1) {
+				    output += '<textarea class="value" data-mediatype="text/html">'+value+'</textarea>';
+				  } else if (typeof value == 'string' && value.search(/^(?:\s*)function(?:\s*)\(/) > -1) {
+				    output += '<textarea class="value" data-mediatype="text/javascript">'+value+'</textarea>';
 				  } else {
   					type = typecheck.test(value);
   					output += '<input class="value" type="'+type+'" value="'+value+'" />';
