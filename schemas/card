@@ -108,7 +108,7 @@
 			 },
 			 "longitude":{
 				 "type":"number"
-			 },
+			 }
 			},
 			"optional":true
 		},
