@@ -50,6 +50,10 @@
 				$this.find('> fieldset > .kvp').each(function(idx, el) {
 					reformed.applyEditorEvents(el);
 				});
+			} else if (reformed.settings.editor == 'data') {
+				$this.find('> fieldset > .kvp').each(function(idx, el) {
+					reformed.applyArrayEditingEvents(el);
+				});
 			}
 			return $this;
 		},
@@ -58,11 +62,27 @@
 			el.find('a.remove').click(function() {
 				$(this).parent().remove_kvp();
 			});
-			el.find('a.another').click(function() {
+			el.find('.kvp > .actions > a.another').click(function() {
 				$(this).parent().another_kvp();
 			});
 			el.find('.front > input').bind('keydown', 'alt+tab', function() {
 				$(this).parent().another_kvp();
+			});
+			reformed.applyArrayEditingEvents(el);
+		},
+		applyArrayEditingEvents: function(el) {
+			// array events
+			$(el).find('.array > .actions > a.another').click(function() {
+				var array = $(this).closest('.array');
+				var actions = $(this).closest('.actions');
+				var appended = actions.prev('fieldset, input')
+					.clone().appendTo(array);
+				if (appended.is('fieldset')) {
+					appended.find('input').val('');
+				} else {
+					appended.val('');
+				}
+				actions.appendTo(array);
 			});
 		},
 		kvp: function(key, value) {
@@ -156,6 +176,9 @@
 						output += reformed.array(value);
 					}
 				});
+			}
+			if (reformed.settings.editor == 'edit' || reformed.settings.editor == 'data') {
+				output += '<div class="actions"><a class="another"">+</a></div>';
 			}
 			output += '</fieldset>';
 			return output;
