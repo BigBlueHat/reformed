@@ -225,24 +225,7 @@ $.fn.reform = function(json, options) {
 
 			month: /^\d{4}-\d{2}$/,
 
-			date: /^\d{4}-\d{2}-\d{2}$/,
-
-			"datetime-local": function(value) {
-				var bits = value.split('T');
-				if (this.date(bits[0]) && this.time(bits[1])) {
-					return true;
-				} else {
-					return false;
-				}
-			},
-
-			datetime: function(value) {
-				if (value.substr(-1, 1) == 'Z') {
-					return (this["datetime-local"](value.substr(0, value.length-1)));
-				} else {
-					return false;
-				}
-			}
+			date: /^\d{4}-\d{2}-\d{2}$/
 		}
 	}
 
