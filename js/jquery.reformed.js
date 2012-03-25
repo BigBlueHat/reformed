@@ -62,7 +62,7 @@
 			el.find('a.remove').click(function() {
 				$(this).parent().remove_kvp();
 			});
-			el.find('.kvp > .actions > a.another').click(function() {
+			el.find('.actions > a.another').click(function() {
 				$(this).parent().another_kvp();
 			});
 			el.find('.front > input').bind('keydown', 'alt+tab', function() {
