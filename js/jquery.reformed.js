@@ -100,7 +100,7 @@
 				var title = value.description;
 				var properties = value.properties;
 				var items = value.items;
-				value = (value.default ? value.default : '');
+				value = (value['default'] ? value['default'] : '');
 				if (type != 'array' && type != 'object') {
 					if (type == 'string') type = 'text';
 					if (type == 'integer') type = 'number';

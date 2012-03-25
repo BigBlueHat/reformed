@@ -144,11 +144,11 @@
     // JSON loaders
 		$('#examplejson').click(function(ev) {
 				ev.preventDefault();
-				$.get('example.json',null,function(data) { $('#input').val(data); });
+				$.get('example.json',function(data) { $('#input').val(data); }, 'text');
 		});
 		$('#cardschema').click(function(ev) {
 				ev.preventDefault();
-				$.get('schemas/card',null,function(data) { $('#input').val(data); });
+				$.get('schemas/card',function(data) { $('#input').val(data); }, 'text');
 		});
 
     // re:form-ers
