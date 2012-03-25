@@ -250,7 +250,7 @@ $.rejson = function(from) {
 	    }
 	});
 
-	return $.toJSON(_json);
+	return JSON.stringify(_json, null, '\t');
 };
 
 $.fn.another_kvp = function () {
