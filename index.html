@@ -135,6 +135,9 @@
 		</div>
 	</form>
 
+  <script>var exports = {};</script>
+  <script type="text/javascript" src="js/clarinet.js"></script>
+  <script type="text/javascript" src="js/reformed.js"></script>
 	<script type="text/javascript" src="js/jquery.1.4.2.min.js"></script>
 	<script type="text/javascript" src="js/jquery-ui-1.8.2.custom.min.js"></script>
 	<script type="text/javascript" src="js/jquery.hotkeys.js"></script>
@@ -161,7 +164,8 @@
 		});
 
 		$('#reformfordataentry').click(function() {
-			$('#reformed').reform($('#input').val(), {'editor':'data'});
+		  reformed($('#input').val());
+			//$('#reformed').reform($('#input').val(), {'editor':'data'});
 		});
 
 		$('#jsonthis').click(function() {
