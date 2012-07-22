@@ -5,7 +5,6 @@ var reformed = (function() {
   var parser = exports.parser();
   var current_obj = [];
   var recent_obj = null;
-  var dom_state = '';
 
   var events = {
       "value": function (value) {
@@ -43,11 +42,7 @@ var reformed = (function() {
       "closeobject": function () {
         // closed an object.
         console.log('closed the object');
-        if (current_obj.length > 1) {
-          current_obj[current_obj.length-2].appendChild(current_obj[current_obj.length-1]);
-        } else {
-          dom_state.appendChild(current_obj[current_obj.length-1]);
-        }
+        current_obj[current_obj.length-2].appendChild(current_obj[current_obj.length-1]);
         current_obj.pop();
       },
       "openarray": function () {
@@ -61,11 +56,7 @@ var reformed = (function() {
       "closearray": function () {
         // closed an array.
         console.log('closed array');
-        if (current_obj.length > 1) {
-          current_obj[current_obj.length-2].appendChild(current_obj[current_obj.length-1]);
-        } else {
-          dom_state.appendChild(current_obj[current_obj.length-1]);
-        }
+        current_obj[current_obj.length-2].appendChild(current_obj[current_obj.length-1]);
         current_obj.pop();
       },
       "error": function (e) {
@@ -86,7 +77,8 @@ var reformed = (function() {
   };
 
   return function (json) {
-    dom_state = document.getElementById('reformed');
+    current_obj.push(document.getElementById('reformed'));
+    current_obj.innerHTML = '';
     parser.write(json).close();
   }
 })();
