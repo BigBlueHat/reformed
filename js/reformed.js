@@ -3,44 +3,70 @@
  */
 var reformed = (function() {
   var parser = exports.parser();
-  var output = '';
+  var current_obj = [];
+  var recent_obj = null;
+  var dom_state = '';
 
   var events = {
       "value": function (value) {
         // got some value.  v is the value. cant be string, int, bool, and null.
         console.log('value', value);
-        output.textContent += '<input class="value" type="text" value="' + value + '" />'
-        if (parser.state != 5) {
-          output.textContent += '</div>';
-        }
+        input = document.createElement('input');
+        input.setAttribute('class', 'value');
+        input.setAttribute('type', 'text');
+        input.setAttribute('value', value);
+        // append
+        recent_obj.appendChild(input);
       },
       /*"string": function() {},*/
       "key": function (key) {
         // got a key in an object.
         console.log('key', key);
-        output.textContent += '<div class="kvp">';
-        output.textContent += '<label class="key">' + key + '</label>';
+        div = document.createElement('div');
+        div.setAttribute('class', 'kvp');
+        label = document.createElement('label');
+        label.setAttribute('class', 'key');
+        text = document.createTextNode(key);
+        label.appendChild(text);
+        div.appendChild(label);
+        // append
+        recent_obj = current_obj[current_obj.length-1].appendChild(div);
       },
       "openobject": function (key) {
         // opened an object. key is the first key.
-        console.log('opened object; first key', key);
-        output.textContent += '<fieldset class="object">';
+        console.log('opened object; first key', key, current_obj);
+        fieldset = document.createElement('fieldset');
+        fieldset.setAttribute('class', 'object');
+        current_obj.push(fieldset);
         parser.onkey(key);
       },
       "closeobject": function () {
         // closed an object.
         console.log('closed the object');
-        output.textContent += '</fieldset>';
+        if (current_obj.length > 1) {
+          current_obj[current_obj.length-2].appendChild(current_obj[current_obj.length-1]);
+        } else {
+          dom_state.appendChild(current_obj[current_obj.length-1]);
+        }
+        current_obj.pop();
       },
       "openarray": function () {
         // opened an array.
         console.log('opened array');
-        output.textContent += '<fieldset class="array">'
+        fieldset = document.createElement('fieldset');
+        fieldset.setAttribute('class', 'array');
+        recent_obj = current_obj[current_obj.length-1].appendChild(fieldset);
+        current_obj.push(recent_obj);
       },
       "closearray": function () {
         // closed an array.
         console.log('closed array');
-        output.textContent += '</fieldset>'
+        if (current_obj.length > 1) {
+          current_obj[current_obj.length-2].appendChild(current_obj[current_obj.length-1]);
+        } else {
+          dom_state.appendChild(current_obj[current_obj.length-1]);
+        }
+        current_obj.pop();
       },
       "error": function (e) {
         // an error happened. e is the error.
@@ -49,7 +75,6 @@ var reformed = (function() {
       "end": function () {
         // parser stream is done, and ready to have more stuff written to it.
         console.log('all done');
-        output.innerHTML = output.textContent;
       }/*,
       "ready": function() {}
       */
@@ -61,8 +86,7 @@ var reformed = (function() {
   };
 
   return function (json) {
-    output = document.getElementById('reformed');
-    output.textContent = '';
+    dom_state = document.getElementById('reformed');
     parser.write(json).close();
   }
 })();
