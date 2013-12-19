@@ -148,7 +148,7 @@
 		});
 		$('#cardschema').click(function(ev) {
 				ev.preventDefault();
-				$.get('schemas/card',function(data) { $('#input').val(data); }, 'text');
+				$.get('schemas/card.json',function(data) { $('#input').val(data); }, 'text');
 		});
 
     // re:form-ers
