@@ -1,0 +1,26 @@
+{
+   "id": "507401517",
+   "name": "Benjamin Young",
+   "first_name": "Benjamin",
+   "last_name": "Young",
+   "link": "http://www.facebook.com/benjaminyoung",
+   "about": "Dreamer, Inventor, Web Developer. I run this: http://bigbluehat.com/ and build this: http://blueinkcms.com/",
+   "location": {
+      "id": 107600062603098,
+      "name": "Greenville, South Carolina"
+   },
+   "work": [
+      {
+         "employer": {
+            "id": 111737955518707,
+            "name": "BigBlueHat"
+         },
+         "start_date": "2003-07"
+      }
+   ],
+   "meeting_for": [
+         "Friendship",
+         "Networking"
+  ]
+}
+
