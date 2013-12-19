@@ -19,7 +19,10 @@
 
 <div style="overflow:hidden">
 <div class="left">
-				<div><a id="examplejson" href="">Example JSON</a> | <a id="cardschema" href="">Card Schema</a></div>
+  <nav class="examples">
+    <li><a class="load-json" href="../../example">Example JSON</a></li>
+    <li><a class="load-json" href="schemas/card.json">Card Schema</a></li>
+  </nav>
 	<textarea id="input">
 	{
 	   "id": "507401517",
@@ -142,14 +145,13 @@
 	<script type="text/javascript">
 	$(document).ready(function() {
     // JSON loaders
-		$('#examplejson').click(function(ev) {
-				ev.preventDefault();
-				$.get('../../example',function(data) { $('#input').val(data); }, 'text');
-		});
-		$('#cardschema').click(function(ev) {
-				ev.preventDefault();
-				$.get('schemas/card.json',function(data) { $('#input').val(data); }, 'text');
-		});
+    $('.load-json').each(function(i, el) {
+      $(el).click(function(ev) {
+        ev.preventDefault();
+        $.get($(ev.target).attr('href'),function(data) { $('#input').val(data); },
+              'text');
+      });
+    });
 
     // re:form-ers
 		$('#reformforjson').click(function() {
