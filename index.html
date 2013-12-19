@@ -164,7 +164,8 @@
 		});
 
 		$('#reformfordataentry').click(function() {
-		  reformed($('#input').val());
+			$('#reformed').empty();
+			reformed($('#input').val(), 'reformed');
 			//$('#reformed').reform($('#input').val(), {'editor':'data'});
 		});
 

@@ -76,9 +76,8 @@ var reformed = (function() {
     // TODO: determine if parser is CParser or CStream-based
   };
 
-  return function (json) {
-    current_obj.push(document.getElementById('reformed'));
-    current_obj.innerHTML = '';
+  return function (json, into) {
+    current_obj.push(document.getElementById(into));
     parser.write(json).close();
   }
 })();
