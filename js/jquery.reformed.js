@@ -28,6 +28,37 @@
  * @param string here Selector of HTML element to place form inside
  */
 (function($) {
+  // Simple JavaScript Templating
+  // John Resig - http://ejohn.org/ - MIT Licensed
+  (function(){
+    var cache = {};
+    this.tmpl = function tmpl(str, data){
+      // Figure out if we're getting a template, or if we need to
+      // load the template - and be sure to cache the result.
+      var fn = !/\W/.test(str) ?
+        cache[str] = cache[str] ||
+          tmpl(document.getElementById(str).innerHTML) :
+        // Generate a reusable function that will serve as a template
+        // generator (and which will be cached).
+        new Function("obj",
+          "var p=[],print=function(){p.push.apply(p,arguments);};" +
+          // Introduce the data as local variables using with(){}
+          "with(obj){p.push('" +
+          // Convert the template into pure JavaScript
+          str
+            .replace(/[\r\t\n]/g, " ")
+            .split("<%").join("\t")
+            .replace(/((^|%>)[^\t]*)'/g, "$1\r")
+            .replace(/\t=(.*?)%>/g, "',$1,'")
+            .split("\t").join("');")
+            .split("%>").join("p.push('")
+            .split("\r").join("\\'")
+        + "');}return p.join('');");
+      // Provide some basic currying to the user
+      return data ? fn( data ) : fn;
+    };
+  })();
+
 /******** Form Creation System ********/
   var reformed = {
     settings: {
@@ -85,63 +116,85 @@
         actions.appendTo(array);
       });
     },
+    templates: {
+      form: {
+        kvp:
+          tmpl('<div class="kvp"><div class="front">'
+          + '<label class="key"><%=key%></label>'
+          + '<% if ($.isPlainObject(value)) { %>'
+          + '<%= reformed.object(value) %>'
+          + '<% } else if ($.isArray(value)) { %>'
+          + '<%= reformed.array(value) %>'
+          + '<% } else if (typeof value == "boolean") { %>'
+          + '<input class="value" type="checkbox"<% if (value) { %> checked="checked"<% } %> />'
+          + '<% } else if (use_textarea) { %>'
+          + '<textarea class="value"><%=value%></textarea>'
+          + '<% } else { %>'
+          + '<input class="value" type="<%=type%>" value="<%=value%>" />'
+          + '<% } %>'
+          + '</div></div>')
+      },
+      editor: {
+        kvp:
+          tmpl('<div class="kvp"><div class="front">'
+          + '<span class="handle">drag</span> '
+          + '<input type="text" value="<%=key%>" class="key" />'
+          + '<% if ($.isPlainObject(value)) { %>'
+          + '<%= reformed.object(value) %>'
+          + '<% } else if ($.isArray(value)) { %>'
+          + '<%= reformed.array(value) %>'
+          + '<% } else if (typeof value == "boolean") { %>'
+          + '<input class="value" type="text" value="<%=value%>" />'
+          + '<% } else if (use_textarea) { %>'
+          + '<textarea class="value"><%=value%></textarea>'
+          + '<% } else { %>'
+          + '<input class="value" type="<%=type%>" value="<%=value%>" />'
+          + '<% } %>'
+          + '</div>'
+          + '<div class="actions"><a class="configure">@</a>'
+          + '<a class="another">+</a><a class="remove">-</a></div>'
+          + '</div>')
+      },
+      schema: {
+        kvp:
+          tmpl('<div class="kvp"><div class="front">'
+          + '<label class="key"><%=key%></label>'
+          + '<% if (type == "array") { %>'
+          + '<%= reformed.array(value, items) %>'
+          + '<% } else if (type == "object" && properties) { %>'
+          + '<%= reformed.object({properties: properties}) %>'
+          + '<% } else { %>'
+          + '<input class="value" type="<%=type%>" value="<%=value%>" title="<%=title%>" />'
+          + '<% } %>'
+          + '</div></div>')
+      }
+    },
     kvp: function(key, value) {
-      var use_schema = (reformed.settings.editor == 'schema');
-      var output = '<div class="kvp"><div class="front">';
-      if (reformed.settings.editor == 'edit') {
-        output += '<span class="handle">drag</span> ';
-        output += '<input type="text" value="'+key+'" class="key" />';
-      } else {
-        output += '<label class="key">'+key+'</label>';
-      }
-
-      if (use_schema) {
+      if (reformed.settings.editor == 'schema') {
         var type = (value.format ? value.format : value.type);
-        var title = value.description;
-        var properties = value.properties;
-        var items = value.items;
-        value = (value['default'] ? value['default'] : '');
-        if (type != 'array' && type != 'object') {
-          if (type == 'string') type = 'text';
-          if (type == 'integer') type = 'number';
-          if (type == 'date-time') type = 'datetime';
-          output += '<input class="value" type="'+type+'" value="'+value+'" title="'+(title ? title : '')+'" />';
-        } else if (type == 'array') {
-          value = [value];
-          output += reformed.array(value, items);
-        } else if (type == 'object' && properties) {
-          output += reformed.object({'properties':properties});
-        }
+        if (type == 'string') type = 'text';
+        if (type == 'integer') type = 'number';
+        if (type == 'date-time') type = 'datetime';
+        output = this.templates.schema.kvp({
+          key: key,
+          type: type,
+          title: value.description || '',
+          properties: value.properties,
+          items: value.items,
+          value: (value['default'] ? value['default'] : ''),
+          reformed: reformed
+        });
       } else {
-        if ($.isPlainObject(value)) {
-          output += reformed.object(value);
-        } else if ($.isArray(value)) {
-          output += reformed.array(value);
-        } else if (typeof value == 'string' || typeof value == 'number') {
-          if (typeof value == 'string'
-          &&
-            (value.search(/<[^>]*>/g) > -1
-            || value.search(/^(?:\s*)function(?:\s*)\(/) > -1)) {
-            output += '<textarea class="value">'+value+'</textarea>';
-          } else {
-            type = typecheck.test(value);
-            output += '<input class="value" type="'+type+'" value="'+value+'" />';
-          }
-        } else if (typeof value == 'boolean') {
-          if (reformed.settings.editor == 'edit') {
-            output += '<input class="value" type="text" value="'+value+'" />';
-          } else {
-            output += '<input class="value" type="checkbox"';
-            if (value) output+= 'checked="checked"';
-            output += ' />';
-          }
-        }
+        var template = (reformed.settings.editor == 'edit') ? 'editor' : 'form';
+        output = this.templates[template].kvp({
+          key: key,
+          value: value,
+          type: typecheck.test(value),
+          use_textarea: (typeof value == 'string' && (value.search(/<[^>]*>/g) > -1
+            || value.search(/^(?:\s*)function(?:\s*)\(/) > -1)),
+          reformed: reformed
+        });
       }
-      output += '</div>';
-      if (reformed.settings.editor == 'edit') {
-        output += '<div class="actions"><a class="configure">@</a><a class="another"">+</a><a class="remove">-</a></div>';
-      }
-      output += '</div>';
       return output;
     },
 
