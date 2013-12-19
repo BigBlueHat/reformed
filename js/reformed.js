@@ -1,7 +1,7 @@
 /**
  * re:form.ed rewritten on clarinet.js
  */
-var reformed = (function() {
+(function() {
   var parser = exports.parser();
   var current_obj = [];
   var recent_obj = null;
@@ -76,7 +76,7 @@ var reformed = (function() {
     // TODO: determine if parser is CParser or CStream-based
   };
 
-  return function (json, into) {
+  this.reformed = function (json, into) {
     current_obj.push(document.getElementById(into));
     parser.write(json).close();
   }
