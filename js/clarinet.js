@@ -7,12 +7,6 @@
 if(typeof process === 'object' && process.env) env = process.env;
 else env = window;
 
-if(typeof FastList === 'function') {
-  fastlist = FastList;
-} else if (typeof require === 'function') {
-  try { fastlist = require('fast-list'); } catch (exc) { fastlist = Array; }
-} else fastlist = Array;
-
   clarinet.parser            = function (opt) { return new CParser(opt);};
   clarinet.CParser           = CParser;
   clarinet.CStream           = CStream;
@@ -65,7 +59,7 @@ if(typeof FastList === 'function') {
     , NULL2                             : S++ // l
     , NULL3                             : S++ // l
     , NUMBER_DECIMAL_POINT              : S++ // .
-    , NUMBER_DIGIT                      : S++ // [0-9]    
+    , NUMBER_DIGIT                      : S++ // [0-9]
     };
 
   for (var s_ in clarinet.STATE) clarinet.STATE[clarinet.STATE[s_]] = s_;
@@ -122,8 +116,8 @@ if(typeof FastList === 'function') {
       parser[buffers[i]] = "";
     }
   }
-  
-  var stringTokenPattern = /[\\"\n]/g
+
+  var stringTokenPattern = /[\\"\n]/g;
 
   function CParser (opt) {
     if (!(this instanceof CParser)) return new CParser (opt);
@@ -136,7 +130,7 @@ if(typeof FastList === 'function') {
     parser.closed   = parser.closedRoot = parser.sawRoot = false;
     parser.tag      = parser.error = null;
     parser.state    = S.BEGIN;
-    parser.stack    = new fastlist();
+    parser.stack    = new Array();
     // mostly just for error reporting
     parser.position = parser.column = 0;
     parser.line     = 1;
@@ -161,13 +155,18 @@ if(typeof FastList === 'function') {
   function CStream (opt) {
     if (!(this instanceof CStream)) return new CStream(opt);
 
-    Stream.apply(me);
-
     this._parser = new CParser(opt);
     this.writable = true;
     this.readable = true;
 
+    //var Buffer = this.Buffer || function Buffer () {}; // if we don't have Buffers, fake it so we can do `var instanceof Buffer` and not throw an error
+    this.bytes_remaining = 0; // number of bytes remaining in multi byte utf8 char to read after split boundary
+    this.bytes_in_sequence = 0; // bytes in multi byte utf8 char to read
+    this.temp_buffs = { "2": new Buffer(2), "3": new Buffer(3), "4": new Buffer(4) }; // for rebuilding chars split before boundary is reached
+    this.string = '';
+
     var me = this;
+    Stream.apply(me);
 
     this._parser.onend = function () { me.emit("end"); };
     this._parser.onerror = function (er) {
@@ -196,9 +195,46 @@ if(typeof FastList === 'function') {
     { constructor: { value: CStream } });
 
   CStream.prototype.write = function (data) {
-    this._parser.write(data.toString());
-    this.emit("data", data);
-    return true;
+    var data = new Buffer(data);
+    for (var i = 0; i < data.length; i++) {
+      var n = data[i];
+      // check for carry over of a multi byte char split between data chunks
+      // & fill temp buffer it with start of this data chunk up to the boundary limit set in the last iteration
+      if (this.bytes_remaining > 0) {
+        for (var j = 0; j < this.bytes_remaining; j++) {
+          this.temp_buffs[this.bytes_in_sequence][this.bytes_in_sequence - this.bytes_remaining + j] = data[j];
+        }
+        this.string = this.temp_buffs[this.bytes_in_sequence].toString();
+        this.bytes_in_sequence = this.bytes_remaining = 0;
+        i = i + j - 1;
+
+        this._parser.write(this.string);
+        this.emit("data", this.string);
+        return true;
+      } else if (this.bytes_remaining === 0 && n >= 128) { // else if no remainder bytes carried over, parse multi byte (>=128) chars one at a time
+        if ((n >= 194) && (n <= 223)) this.bytes_in_sequence = 2;
+        if ((n >= 224) && (n <= 239)) this.bytes_in_sequence = 3;
+        if ((n >= 240) && (n <= 244)) this.bytes_in_sequence = 4;
+        if ((this.bytes_in_sequence + i) > data.length) { // if bytes needed to complete char fall outside data length, we have a boundary split
+          for (var k = 0; k <= (data.length - 1 - i); k++) {
+            this.temp_buffs[this.bytes_in_sequence][k] = data[i + k]; // fill temp data of correct size with bytes available in this chunk
+          }
+          this.bytes_remaining = (i + this.bytes_in_sequence) - data.length;
+          i = data.length - 1;
+        } else {
+          this.string = data.slice(i, (i + this.bytes_in_sequence)).toString();
+          i = i + this.bytes_in_sequence - 1;
+
+          this._parser.write(this.string);
+          this.emit("data", this.string);
+          return true;
+        }
+      } else {
+        this._parser.write(data.toString());
+        this.emit("data", data);
+        return true;
+      }
+    }
   };
 
   CStream.prototype.end = function (chunk) {
@@ -220,24 +256,31 @@ if(typeof FastList === 'function') {
     return Stream.prototype.on.call(me, ev, handler);
   };
 
+  CStream.prototype.destroy = function () {
+    clearBuffers(this._parser);
+    this.emit("close");
+  };
+
   function emit(parser, event, data) {
     if(clarinet.INFO) console.log('-- emit', event, data);
     if (parser[event]) parser[event](data);
   }
 
   function emitNode(parser, event, data) {
-    if (parser.textNode) closeValue(parser);
+    closeValue(parser);
     emit(parser, event, data);
   }
 
   function closeValue(parser, event) {
     parser.textNode = textopts(parser.opt, parser.textNode);
-    if (parser.textNode) emit(parser, (event ? event : "onvalue"), parser.textNode);
+    if (parser.textNode) {
+      emit(parser, (event ? event : "onvalue"), parser.textNode);
+    }
     parser.textNode = "";
   }
 
   function closeNumber(parser) {
-    if (parser.numberNode) 
+    if (parser.numberNode)
       emit(parser, "onvalue", parseFloat(parser.numberNode));
     parser.numberNode = "";
   }
@@ -300,7 +343,7 @@ if(typeof FastList === 'function') {
         case S.BEGIN:
           if (c === "{") parser.state = S.OPEN_OBJECT;
           else if (c === "[") parser.state = S.OPEN_ARRAY;
-          else if (c !== '\r' && c !== '\n' && c !== ' ' && c !== '\t') 
+          else if (c !== '\r' && c !== '\n' && c !== ' ' && c !== '\t')
             error(parser, "Non-whitespace before {[.");
         continue;
 
@@ -413,9 +456,12 @@ if(typeof FastList === 'function') {
             if (c === '"' && !slashed) {
               parser.state = parser.stack.pop() || S.VALUE;
               parser.textNode += chunk.substring(starti, i-1);
+              if(!parser.textNode) {
+                 emit(parser, "onvalue", "");
+              }
               break;
             }
-            if (c === '\\' && !slashed) { 
+            if (c === '\\' && !slashed) {
               slashed = true;
               parser.textNode += chunk.substring(starti, i-1);
               c = chunk.charAt(i++);
@@ -423,25 +469,27 @@ if(typeof FastList === 'function') {
             }
             if (slashed) {
               slashed = false;
-                   if (c === 'n') parser.textNode += '\n'
-              else if (c === 'r') parser.textNode += '\r'
-              else if (c === 't') parser.textNode += '\t'
-              else if (c === 'f') parser.textNode += '\f'
-              else if (c === 'b') parser.textNode += '\b'
+                   if (c === 'n') { parser.textNode += '\n'; }
+              else if (c === 'r') { parser.textNode += '\r'; }
+              else if (c === 't') { parser.textNode += '\t'; }
+              else if (c === 'f') { parser.textNode += '\f'; }
+              else if (c === 'b') { parser.textNode += '\b'; }
               else if (c === 'u') {
                 // \uxxxx. meh!
                 unicodeI = 1;
                 parser.unicodeS = '';
-              } else parser.textNode += c
+              } else {
+                parser.textNode += c;
+              }
               c = chunk.charAt(i++);
               starti = i-1;
               if (!c) break;
               else continue;
             }
-            
-            stringTokenPattern.lastIndex = i
+
+            stringTokenPattern.lastIndex = i;
             var reResult = stringTokenPattern.exec(chunk);
-            if (reResult == null) {
+            if (reResult === null) {
               i = chunk.length+1;
               parser.textNode += chunk.substring(starti, i-1);
               break;
@@ -537,7 +585,7 @@ if(typeof FastList === 'function') {
               error(parser, 'Invalid number has two dots');
             parser.numberNode += c;
           } else if (c==='e' || c==='E') {
-            if(parser.numberNode.indexOf('e')!==-1 || 
+            if(parser.numberNode.indexOf('e')!==-1 ||
                parser.numberNode.indexOf('E')!==-1 )
                error(parser, 'Invalid number has two exponential');
             parser.numberNode += c;
